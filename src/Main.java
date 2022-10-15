@@ -200,7 +200,7 @@ public class Main implements ActionListener
             int missingBracket = Math.abs(bracket - closedBracket);
 
 
-            int total = (singleEqual+badvariables+badSyntax+missingBracket)*10;
+            int total = (singleEqual+badvariables+badSyntax+missingBracket+missingDoubleDot)*10;
             String message =
                     "-- \"=\" au lieu de \"==\"     :  "+singleEqual+
                             "\n-- Variables males reecrites :  "+badvariables+
@@ -218,7 +218,7 @@ public class Main implements ActionListener
             JOptionPane.showMessageDialog(f, "Ce programme est destine a la detection d'erreurs frequentes en python." +
                     " Il n'est pas parfait car il possede des limites causees par une elaboration simple et rapide destinee " +
                     "au divertissement. Bien que les algorithmes utilises sont elabores, le programme n'est pas pour autant " +
-                    "infaillible, et peut mal fonctionner et presenter des \"bugs\".","A propos", JOptionPane.INFORMATION_MESSAGE);
+                    "infaillible, et peut mal fonctionner et presenter des \"bugs\". Programmation: https://github.com/DR34M-M4K3R","A propos", JOptionPane.INFORMATION_MESSAGE);
 
 
 
