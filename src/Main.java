@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -56,7 +55,12 @@ public class Main implements ActionListener
         l2 = new JLabel();
         l2.setBounds(300,350,200,60);
 
-        text = new JTextArea();
+        text = new JTextArea("test = \"Bonjour\n" +
+                "def fonction()\n" +
+                "    if teSt = \"Bonjour\"\n" +
+                "        print(\"Le code ci-dessus comporte des erreurs détéctables par ce logiciel.\")\n" +
+                "        print(\" Cliquez sur \\\"Entrer\\\" pour analyser le code.\"\n" +
+                "        Return Test");
         text.setBounds(30,40,500,300);
         JScrollPane scroll = new JScrollPane (text, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroll.setBounds(30,40,500,300);
@@ -80,7 +84,7 @@ public class Main implements ActionListener
         f.add(btn);
         f.add(aboutBtn);
 
-        f.setSize(600,600);
+        f.setSize(560,600);
         f.setLayout(null);
         f.setVisible(true);
     }
@@ -97,20 +101,10 @@ public class Main implements ActionListener
         return count;
     }
 
-    ArrayList<Integer> getWordIndex(String str, String word){
-
-        ArrayList<Integer> wordIndex = new ArrayList<Integer>();
-        int index = str.indexOf(word);
-        while(index >= 0) {
-            wordIndex.add(index);
-            index = str.indexOf(word, index+1);
-        }
-        return wordIndex;
-    }
-
     public void actionPerformed(ActionEvent e) {
         if (Objects.equals(e.getActionCommand(), "Analyser")){
-            String str = "";
+            StringBuilder log = new StringBuilder();
+            String str;
             str = text.getText();
             //int ifIndex = 0;
             l1.setText("Lignes: "+ text.getLineCount());
@@ -121,15 +115,24 @@ public class Main implements ActionListener
 
 
             //"=" au lieu de "=="
-            int ifCount = countWord(str,"if")+countWord(str,"and")+countWord(str,"or")+countWord(str, "while");
-            int operatorCount = countWord(str, "==")+countWord(str, ">=")+countWord(str, "<=")+countWord(str, "not");
+            int ifCount = countWord(str,"if ")+countWord(str," and ")+countWord(str," or ")+countWord(str, "while ");
+            int operatorCount = countWord(str, "==")+countWord(str, ">=")+countWord(str, "<=")+countWord(str, "not ");
             int singleEqual=Math.abs(ifCount-operatorCount);
+            if (singleEqual==0){
+                log.append("\n[ - ] Autant de \"==\" que de \"if, and, or, while.\"");
 
+
+            }
+            else{
+                log.append("\n[ x ] ").append(operatorCount).append(" double signe egal/operateurs pour ").append(ifCount).append(" \"if, and, or, while\". Il en manque donc ").append(singleEqual);
+
+            }
 
 
 
 
             //Variables males ecrites
+            StringBuilder templog = new StringBuilder();
             ArrayList<String> variables = new ArrayList<>();
             int badvariables = 0;
             String variable = "";
@@ -154,10 +157,12 @@ public class Main implements ActionListener
             for (String s : variables) {
                 for (String value : strList) {
                     if (JaroWinklerScore.compute(s, value) > 0.8 && JaroWinklerScore.compute(s, value) < 1.00) {
+                        templog.append("\n[ x ] Ressemblance entre \"").append(s).append("\" et \"").append(value).append("\" a ").append(JaroWinklerScore.compute(s, value)).append(" pourcent");
                         badvariables++;
                     }
                 }
             }
+            log.append("\n__________________________________________\n[ - ] Variables detectees: ").append(variables).append(".").append(templog).append("\n__________________________________________\n");
 
 
             //Deux points manquants
@@ -169,47 +174,146 @@ public class Main implements ActionListener
                     while (indent == ' ') {
                         indent = line.charAt(indentLevel);
                         indentLevel++;
+
                     }
                     try {
-                        firstWords.append(line.substring((indentLevel - 1), line.indexOf(" ")));
+                        if (!line.substring((indentLevel - 1)).contains(" ")){
+                            firstWords.append(line.substring((indentLevel - 1)));
+                        }else {
+                            firstWords.append(line, (indentLevel - 1), line.indexOf(" ", indentLevel - 1));
+
+                        }
                     } catch (StringIndexOutOfBoundsException ignored) {}
                 }
             }
-            int doubleDotKeyword = countWord(String.valueOf(firstWords), "if") + countWord(String.valueOf(firstWords), "else") + countWord(String.valueOf(firstWords), "while") + countWord(String.valueOf(firstWords), "for");
+            int doubleDotKeyword = countWord(String.valueOf(firstWords), "if") + countWord(String.valueOf(firstWords), "else") + countWord(String.valueOf(firstWords), "while") + countWord(String.valueOf(firstWords), "for") + countWord(String.valueOf(firstWords), "def")+countWord(String.valueOf(firstWords), "elif");
             int doubleDot = countWord(str, ":");
             int missingDoubleDot = Math.abs(doubleDotKeyword - doubleDot);
+            if (missingDoubleDot==0){
+                log.append("\n[ v ] Autant de double-points que de \"if, else, while, for, def, elif.\"");
 
 
+            }
+            else{
+                log.append("\n[ x ] ").append(operatorCount).append(" double-points pour ").append(doubleDotKeyword).append(" \"if, and, or, while\". Il en manque donc ").append(missingDoubleDot);
+
+            }
+
+
+            log.append("\n__________________________________________\n");
 
 
             //Erreurs de syntaxe
             int badSyntax = 0;
-            String[] keyWords = {"if", "else", "while", "return", "and", "or", "for", "True", "False"};
+            String[] keyWords = {"if", "else", "while", "return", "and", "or", "for", "True", "False", "import"};
             for (String keyWord : keyWords) {
                 for (String value : strList) {
+                    //System.out.println(keyWord+" "+value+" "+JaroWinklerScore.compute(keyWord, value));
+
                     if (JaroWinklerScore.compute(keyWord, value) > 0.85 && JaroWinklerScore.compute(keyWord, value) < 1.00) {
                         badSyntax++;
+                        log.append("\n[ x ] Ressemblance entre \"").append(value).append("\" et \"").append(keyWord).append("\" a ").append(JaroWinklerScore.compute(keyWord, value)).append(" pourcent");
+
                     }
                 }
             }
+            if (badSyntax==0){
+                log.append("[ v ] La syntaxe est corecte.");
+
+            }
+
+            log.append("\n__________________________________________\n");
 
 
             //Parenthese manquante
             int bracket = countWord(str,"(");
             int closedBracket = countWord(str, ")");
             int missingBracket = Math.abs(bracket - closedBracket);
+            if (missingBracket==0){
+                log.append("\n[ - ] Autant de \" ( \" que de \")\"");
 
 
-            int total = (singleEqual+badvariables+badSyntax+missingBracket+missingDoubleDot)*10;
-            String message =
-                    "-- \"=\" au lieu de \"==\"     :  "+singleEqual+
-                            "\n-- Variables males reecrites :  "+badvariables+
-                            "\n-- Mauvaise syntaxe:  "+badSyntax+
-                            "\n-- Parenthese manquante:  "+missingBracket+
-                            "\n-- \":\" manquant:  "+missingDoubleDot+
-                            "\n\n         -Total: "+total+"€!-";
+            }
+            else{
+                log.append("\n[ x ] ").append(bracket).append(" parenthese ouverte pour ").append(closedBracket).append(" parentheses fermees. Il en manque donc ").append(missingBracket);
 
-            JOptionPane.showMessageDialog(f,message,"Au revoir!", JOptionPane.ERROR_MESSAGE);
+            }
+
+
+            log.append("\n__________________________________________\n");
+
+
+
+            //Guillemet manquant
+            int missingQuote = 0;
+            int lineIndex = 0;
+            for (String line : lines) {
+                lineIndex++;
+                if (countWord(line, "\"")%2 == 1){
+                    missingQuote++;
+                    log.append("\n[ x ] Nombre impair de guillemet detecte a la ligne d'indice ").append(lineIndex);
+
+                }
+            }
+
+
+
+
+            int quote = countWord(str,"\"");
+
+
+            int total = (singleEqual+badvariables+badSyntax+missingBracket+missingDoubleDot+missingQuote)*10;
+            if (total==0){
+                Object[] options1 = { "Ok", "Details"};
+                JPanel msgPanel = new JPanel();
+                msgPanel.add(new JLabel("Aucune erreur de débutant détéctée."));
+                int result = JOptionPane.showOptionDialog(null, msgPanel, "Bravo!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,null, options1, null);
+                if (result == JOptionPane.NO_OPTION){
+                    JPanel logPanel = new JPanel();
+                    logPanel.add(new JTextArea(log.toString()));
+
+                    JOptionPane.showMessageDialog(null, logPanel, "Log", JOptionPane.INFORMATION_MESSAGE);
+
+
+                    //JOptionPane.showMessageDialog(f,("Details:\n"+log),"Details de l'analyse", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+            }else {
+                String message =
+                        "-- \"=\" au lieu de \"==\"     :  " + singleEqual +
+                                "\n-- Variables males reecrites :  " + badvariables +
+                                "\n-- Mauvaise syntaxe:  " + badSyntax +
+                                "\n-- Parenthese manquante:  " + missingBracket +
+                                "\n-- Double-points manquant:  " + missingDoubleDot +
+                                "\n-- Guillemets manquant:  " + missingQuote +
+                                "\n\n         -Total: " + total + "€!-";
+                //JOptionPane.showMessageDialog(f,message,"Erreurs détéctées", JOptionPane.ERROR_MESSAGE);
+
+                Object[] options1 = { "Ok", "Details"};
+                JPanel msgPanel = new JPanel();
+                JTextArea errorArea = new JTextArea(message);
+                errorArea.setEditable(false);
+                msgPanel.add(errorArea);
+                int result = JOptionPane.showOptionDialog(null, msgPanel, "Erreurs détéctées:", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,null, options1, null);
+                if (result == JOptionPane.NO_OPTION){
+                    JPanel logPanel = new JPanel();
+                    logPanel.add(new JTextArea(log.toString()));
+
+                    JOptionPane.showMessageDialog(null, logPanel, "Log", JOptionPane.INFORMATION_MESSAGE);
+
+
+                    //JOptionPane.showMessageDialog(f,("Details:\n"+log),"Details de l'analyse", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+
+
+//test code:
+/*
+test = "Bonjour
+if teSt = "Bonjour"
+    print("Le code ci-dessus comporte des erreurs détéctables par ce logiciel.")
+    print(" Cliquez sur \"Entrer\" pour analyser le code."
+            */
 
 
 
