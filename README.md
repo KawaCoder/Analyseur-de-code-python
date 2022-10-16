@@ -11,6 +11,11 @@ Cet outil est capable de détecter avec une fiabilité relative les erreurs suiv
 - Deux points manquants
 - Guillemets manquants
 
+## Téléchargements
+[![hey](https://img.shields.io/badge/Download%20.exe-181717?style=for-the-badge&color=blue&logo=windows)](https://github.com/DR34M-M4K3R/Analyseur-de-code-python/releases/download/1.0.0/ERREUR-DETECTOR-3000.exe)
+
+[![hey](https://img.shields.io/badge/Download%20.jar-181717?style=for-the-badge&color=red&logo=java)](https://github.com/DR34M-M4K3R/Analyseur-de-code-python/releases/download/1.0.0/ERREUR-DETECTOR-3000.jar)
+
 ## Screenshots:
 
 
