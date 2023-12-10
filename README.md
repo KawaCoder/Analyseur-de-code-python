@@ -1,6 +1,6 @@
 # Analyseur-de-code-python ![Sans_titre-removebg-preview(1)](https://user-images.githubusercontent.com/67145585/196044343-5ed36533-1f72-4eb7-9d91-872e005c7b79.png)
 Un détécteur d'erreurs fréquentes en python écrit en Java.
-
+note: ce programme est à voir comme un concept, plus qu'un outil. Les algorithmes de détéction sont assez médiocres.
 
 Cet outil est capable de détecter avec une fiabilité relative les erreurs suivantes:
 
