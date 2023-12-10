@@ -2,7 +2,7 @@
 Un détécteur d'erreurs fréquentes en python écrit en Java.
 note: ce programme est à voir comme un concept, plus qu'un outil. Les algorithmes de détéction sont assez médiocres.
 
-Cet outil est capable de détecter avec une fiabilité relative les erreurs suivantes:
+Cet outil est capable de détecter (avec une fiabilité à revoir) les erreurs suivantes:
 
 - Signe égal seul dans une condition (au lieu de "==")
 - Variables mal orthographiées (via l'algorithme de [Jaro-Winkler](https://fr.wikipedia.org/wiki/Distance_de_Jaro-Winkler)
